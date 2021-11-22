@@ -58,8 +58,8 @@ if not NADMOD.Props then
 	timer.Create("WarnOtherPPs", 0, 1, function()
 		//Print a harmless error if we detect other PP's active, since this often leads to confusion. NPP'll still load fine
 		//Known CPPI plugins: FPP, SPP, NPP, ULX's UPS
-		if not oldCPPI or (oldCPPI.GetName and oldCPPI:GetName() == "Nadmod Prop Protection") then oldCPPI = CPPI end
-		if oldCPPI and (not oldCPPI.GetName or oldCPPI:GetName() ~= "Nadmod Prop Protection") then Error("NPP has detected "..(oldCPPI.GetName and oldCPPI:GetName() or "another CPPI PP").." is installed, you probably only want one PP active at a time!!\n")
+		if not oldCPPI or (oldCPPI.GetName and oldCPPI:GetName() == "Nadmod物品保护") then oldCPPI = CPPI end
+		if oldCPPI and (not oldCPPI.GetName or oldCPPI:GetName() ~= "Nadmod物品保护") then Error("NPP has detected "..(oldCPPI.GetName and oldCPPI:GetName() or "another CPPI PP").." is installed, you probably only want one PP active at a time!!\n")
 		elseif PP_Settings then Error("NPP has detected Evolve's PP plugin, you probably only want one PP active at a time!!\n")
 		end
 	end)
@@ -173,7 +173,7 @@ function NADMOD.PlayerCanTouch(ply, ent)
 			NADMOD.PlayerMakePropOwner(ent:GetOwner(), ent)
 		else
 			NADMOD.PlayerMakePropOwner(ply, ent)
-			NADMOD.Notify(ply, "You now own this " .. class .. " (" .. string.sub(table.remove(string.Explode("/", ent:GetModel() or "?")), 1,-5) .. ")" )
+			NADMOD.Notify(ply, "现在你拥有了此 " .. class .. " (" .. string.sub(table.remove(string.Explode("/", ent:GetModel() or "?")), 1,-5) .. ")" )
 			return true
 		end
 
@@ -355,7 +355,7 @@ function NADMOD.WorldOwner()
 			WorldEnts = WorldEnts + 1
 		end
 	end
-	print("Nadmod Prop Protection: "..WorldEnts.." props belong to world")
+	print("Nadmod物品保护: "..WorldEnts.." 个物品属于世界")
 end
 if CurTime() < 5 then timer.Create("NADMOD.PPFindWorldProps",7,1,NADMOD.WorldOwner) end
 hook.Add("PostCleanupMap","NADMOD.MapCleaned",function()
@@ -373,7 +373,7 @@ function NADMOD.EntityRemoved(ent)
 		if NADMOD.PPConfig.autocdp > 0 and (NADMOD.PPConfig.autocdpadmins or not NADMOD.IsPPAdmin(ent)) then 
 			timer.Create("NADMOD.AutoCDP_"..steamid, NADMOD.PPConfig.autocdp, 1, function() 
 				local count = NADMOD.CleanupPlayerProps(steamid)
-				if count > 0 then NADMOD.Notify(nick.."'s props ("..count..") have been autocleaned.") end
+				if count > 0 then NADMOD.Notify(nick.."的物品 (共"..count.."个) 已被自动清除") end
 			end)
 			NADMOD.AutoCDPTimers[nick] = steamid
 		end
@@ -415,7 +415,7 @@ end
 function NADMOD.CleanPlayer(ply, tar)
 	if IsValid(tar) and tar:IsPlayer() then 
 		local count = NADMOD.CleanupPlayerProps(tar:SteamID())
-		NADMOD.Notify((ply:IsValid() and ply:Nick() or "Console") .. " cleaned up " ..tar:Nick().."'s props ("..count..")")
+		NADMOD.Notify((ply:IsValid() and ply:Nick() or "控制台") .. " 清除了 " ..tar:Nick().."的物品 (共"..count.."个)")
 	end
 end
 
@@ -423,7 +423,7 @@ function NADMOD.CleanupProps(ply, cmd, args)
 	local EntIndex = args[1]
 	if not EntIndex or EntIndex == "" then
 		local count = NADMOD.CleanupPlayerProps(ply:SteamID())
-		NADMOD.Notify(ply,"Your props have been cleaned up ("..count..")")
+		NADMOD.Notify(ply,"你的物品已被清除 (共"..count.."个)")
 	elseif !ply:IsValid() or NADMOD.IsPPAdmin(ply) then
 		NADMOD.CleanPlayer(ply, Entity(EntIndex))
 	end
@@ -448,7 +448,7 @@ function NADMOD.CleanName(ply, cmd, args, fullstr)
 			count = count + 1
 		end
 	end
-	NADMOD.Notify((ply:IsValid() and ply:Nick() or "Console") .. " cleaned up " ..fullstr.."'s props ("..count..")")
+	NADMOD.Notify((ply:IsValid() and ply:Nick() or "控制台") .. " 清除了 " ..fullstr.." 的物品 (共"..count.."个)")
 end
 concommand.Add("nadmod_cleanname",NADMOD.CleanName)
 
@@ -463,15 +463,15 @@ function NADMOD.CDP(ply, cmd, args)
 			count = count + 1
 		end
 	end
-	NADMOD.Notify("Disconnected players props ("..count..") have been cleaned up")
+	NADMOD.Notify("已断开玩家的物品 (共"..count.."个) 已被清除")
 end
 concommand.Add("nadmod_cdp",NADMOD.CDP)
 
 function NADMOD.CleanClass(ply,cmd,args)
 	if ply:IsValid() and not NADMOD.IsPPAdmin(ply) then return end
-	if args[1] == "npc_*" then NADMOD.Notify("NPCs have been cleaned up")
-	elseif args[1] == "prop_ragdol*" then NADMOD.Notify("Ragdolls have been cleaned up")
-	else NADMOD.Notify(args[1].." have been cleaned up")
+	if args[1] == "npc_*" then NADMOD.Notify("NPC已被清除")
+	elseif args[1] == "prop_ragdol*" then NADMOD.Notify("布娃娃已被清除")
+	else NADMOD.Notify(args[1].." 已被清除")
 	end
 	for _,v in ipairs(ents.FindByClass(args[1])) do v:Remove() end
 end
@@ -479,7 +479,7 @@ concommand.Add("nadmod_cleanclass", NADMOD.CleanClass)
 
 function NADMOD.CleanCLRagdolls(ply,cmd,args)
 	if ply:IsValid() and not NADMOD.IsPPAdmin(ply) then return end
-	NADMOD.Notify("Clientside Ragdolls have been cleaned up")
+	NADMOD.Notify("客户端布娃娃已被清除")
 	net.Start("nadmod_cleanclragdolls") net.Broadcast()
 	game.RemoveRagdolls()
 end
@@ -487,7 +487,7 @@ concommand.Add("nadmod_cleanclragdolls", NADMOD.CleanCLRagdolls)
 
 function NADMOD.CleanWorldRopes(ply,cmd,args)
 	if ply:IsValid() and not NADMOD.IsPPAdmin(ply) then return end
-	NADMOD.Notify("World ropes have been cleaned up")
+	NADMOD.Notify("世界上的绳子已被清除")
 	for k,v in pairs(ents.FindByClass("keyframe_rope")) do
 		if v.Ent1 and v.Ent1:IsWorld() and v.Ent2 and v.Ent2:IsWorld() then v:Remove() end
 	end
@@ -515,9 +515,9 @@ function NADMOD.DebugTotals(ply,cmd,args)
 	local tab = {}
 	for k,v in pairs(NADMOD.Props) do
 		local name = v.Name
-		if name == "O" then name = "Ownerless"
-		elseif name == "W" then name = "World"
-		elseif not v.SPPOwner:IsValid() then name = "[Disconnected]"..name
+		if name == "O" then name = "无拥有者"
+		elseif name == "W" then name = "世界"
+		elseif not v.SPPOwner:IsValid() then name = "[已断开]"..name
 		end
 		tab[name] = (tab[name] or 0) + 1
 	end
@@ -570,10 +570,10 @@ net.Receive("nadmod_ppfriends",function(len,ply)
 		end
 	end
 	NADMOD.Save()
-	NADMOD.Notify(ply, "Friends received!")
+	NADMOD.Notify(ply, "好友列表已接收!")
 end)
 
-function CPPI:GetName() return "Nadmod Prop Protection" end
+function CPPI:GetName() return "Nadmod物品保护" end
 function CPPI:GetVersion() return NADMOD.PPVersion end
 function metaply:CPPIGetFriends()
 	if not self:IsValid() then return {} end
