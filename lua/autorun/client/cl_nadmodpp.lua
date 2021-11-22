@@ -21,8 +21,8 @@ net.Receive("nadmod_propowners",function(len)
 	for i=1, net.ReadUInt(32) do
 		local id, owner = net.ReadUInt(16), nameMap[net.ReadUInt(8)]
 		if owner.SteamID == "-" then Props[id] = nil PropNames[id] = nil
-		elseif owner.SteamID == "W" then PropNames[id] = "World"
-		elseif owner.SteamID == "O" then PropNames[id] = "Ownerless"
+		elseif owner.SteamID == "W" then PropNames[id] = "世界"
+		elseif owner.SteamID == "O" then PropNames[id] = "无拥有者"
 		else
 			Props[id] = owner.SteamID
 			PropNames[id] = owner.Name
@@ -47,7 +47,7 @@ function NADMOD.PlayerCanTouch(ply, ent)
 	end
 
 	-- Ownerless props can be touched by all
-	if PropNames[index] == "Ownerless" then return true end 
+	if PropNames[index] == "无拥有者" then return true end 
 	-- Admins can touch anyones props + world
 	if NADMOD.PPConfig["adminall"] and NADMOD.IsPPAdmin(ply) then return true end
 	-- Players can touch their own props
@@ -78,7 +78,7 @@ hook.Add("HUDPaint", "NADMOD.HUDPaint", function()
 	if !tr.HitNonWorld then return end
 	local ent = tr.Entity
 	if ent:IsValid() && !ent:IsPlayer() then
-		local text = "Owner: " .. (PropNames[ent:EntIndex()] or "N/A")
+		local text = "拥有者: " .. (PropNames[ent:EntIndex()] or "未知")
 		surface.SetFont(font)
 		local Width, Height = surface.GetTextSize(text)
 		local boxWidth = Width + 25
@@ -145,7 +145,7 @@ function NADMOD.AdminPanel(Panel, runByNetReceive)
 	if not runByNetReceive then 
 		RunConsoleCommand("npp_refreshconfig")
 		timer.Create("NADMOD.AdminPanelCheckFail",0.75,1,function()
-			nonadmin_help:SetText("Waiting for the server to say you're an admin...")
+			nonadmin_help:SetText("等待服务器表明你是管理员...")
 		end)
 		if not NADMOD.PPConfig then
 			return
@@ -153,23 +153,23 @@ function NADMOD.AdminPanel(Panel, runByNetReceive)
 	else
 		timer.Remove("NADMOD.AdminPanelCheckFail")
 	end
-	Panel:SetName("NADMOD PP Admin Panel")
+	Panel:SetName("NADMOD PP管理员面板")
 	
-	Panel:CheckBox(	"Main PP Power Switch", "npp_toggle")
-	Panel:CheckBox(	"Admins can touch anything", "npp_adminall")
-	local use_protection = Panel:CheckBox(	"Use (E) Protection", "npp_use")
-	use_protection:SetToolTip("Stop nonfriends from entering vehicles, pushing buttons/doors")
+	Panel:CheckBox(	"主物品保护开关", "npp_toggle")
+	Panel:CheckBox(	"管理员能碰任何东西", "npp_adminall")
+	local use_protection = Panel:CheckBox(	"启用E键保护", "npp_use")
+	use_protection:SetToolTip("阻止非好友进入载具、按按钮和开门")
 	
-	local txt = Panel:Help("Autoclean Disconnected Players?")
+	local txt = Panel:Help("自动清除已断开玩家物品？")
 	txt:SetAutoStretchVertical(false)
 	txt:SetContentAlignment( TEXT_ALIGN_CENTER )
-	local autoclean_admins = Panel:CheckBox(	"Autoclean Admins", "npp_autocdpadmins")
-	autoclean_admins:SetToolTip("Should Admin Props also be autocleaned?")
-	local autoclean_timer = Panel:NumSlider("Autoclean Timer", "npp_autocdp", 0, 1200, 0 )
+	local autoclean_admins = Panel:CheckBox(	"自动清除管理员物品", "npp_autocdpadmins")
+	autoclean_admins:SetToolTip("是否应该一并清除已断开管理员的物品？")
+	local autoclean_timer = Panel:NumSlider("自动清除倒计时", "npp_autocdp", 0, 1200, 0 )
 	autoclean_timer:SetToolTip("0 disables autocleaning")
-	Panel:Button(	"Apply Settings", "npp_apply") 
+	Panel:Button(	"应用设置", "npp_apply") 
 	
-	local txt = Panel:Help("                     Cleanup Panel")
+	local txt = Panel:Help("                     清除面板")
 	txt:SetContentAlignment( TEXT_ALIGN_CENTER )
 	txt:SetFont("DermaDefaultBold")
 	txt:SetAutoStretchVertical(false)
@@ -180,7 +180,7 @@ function NADMOD.AdminPanel(Panel, runByNetReceive)
 	end
 	local dccount = 0
 	for k,v in pairs(counts) do
-		if k != "World" and k != "Ownerless" then dccount = dccount + v end
+		if k != "世界" and k != "无拥有者" then dccount = dccount + v end
 	end
 	for k, ply in pairs(player.GetAll()) do
 		if IsValid(ply) then
@@ -191,11 +191,11 @@ function NADMOD.AdminPanel(Panel, runByNetReceive)
 	end
 	
 	Panel:Help(""):SetAutoStretchVertical(false) -- Spacer
-	Panel:Button("Cleanup Disconnected Players Props ("..dccount..")", "nadmod_cdp")
-	Panel:Button("Cleanup All NPCs", 			"nadmod_cleanclass", "npc_*")
-	Panel:Button("Cleanup All Ragdolls", 		"nadmod_cleanclass", "prop_ragdol*")
-	Panel:Button("Cleanup Clientside Ragdolls", "nadmod_cleanclragdolls")
-	Panel:Button("Cleanup World Ropes", "nadmod_cleanworldropes")
+	Panel:Button("清除已断开玩家的物品 (共"..dccount.."个)", "nadmod_cdp")
+	Panel:Button("清除所有NPC", 			"nadmod_cleanclass", "npc_*")
+	Panel:Button("清除所有布娃娃", 		"nadmod_cleanclass", "prop_ragdol*")
+	Panel:Button("清除客户端布娃娃", "nadmod_cleanclragdolls")
+	Panel:Button("清除世界上的绳子", "nadmod_cleanworldropes")
 end
 
 local metaply = FindMetaTable("Player")
@@ -233,26 +233,26 @@ function NADMOD.ClientPanel(Panel)
 	RunConsoleCommand("npp_refreshfriends")
 	Panel:ClearControls()
 	if !NADMOD.ClientCPanel then NADMOD.ClientCPanel = Panel end
-	Panel:SetName("NADMOD - Client Panel")
+	Panel:SetName("NADMOD - 客户端面板")
 	
-	Panel:Button("Cleanup Props", "nadmod_cleanupprops")
-	Panel:Button("Clear Clientside Ragdolls", "nadmod_cleanclragdolls")
+	Panel:Button("清除物品", "nadmod_cleanupprops")
+	Panel:Button("清除客户端布娃娃", "nadmod_cleanclragdolls")
 	
-	local txt = Panel:Help("                     Friends Panel")
+	local txt = Panel:Help("                     好友面板")
 	txt:SetContentAlignment( TEXT_ALIGN_CENTER )
 	txt:SetFont("DermaDefaultBold")
 	txt:SetAutoStretchVertical(false)
 	
 	local Players = player.GetAll()
 	if(table.Count(Players) == 1) then
-		Panel:Help("No Other Players Are Online")
+		Panel:Help("没有别的玩家在线")
 	else
 		for _, tar in pairs(Players) do
 			if(IsValid(tar) and tar != LocalPlayer()) then
 				Panel:CheckBox(tar:Nick(), "npp_friend_"..tar:SteamID64bot())
 			end
 		end
-		Panel:Button("Apply Friends", "npp_applyfriends")
+		Panel:Button("应用好友列表", "npp_applyfriends")
 	end
 end
 
@@ -267,8 +267,8 @@ end
 hook.Add("SpawnMenuOpen", "NADMOD.SpawnMenuOpen", NADMOD.SpawnMenuOpen)
 
 function NADMOD.PopulateToolMenu()
-	spawnmenu.AddToolMenuOption("Utilities", "NADMOD Prop Protection", "Admin", "Admin", "", "", NADMOD.AdminPanel)
-	spawnmenu.AddToolMenuOption("Utilities", "NADMOD Prop Protection", "Client", "Client", "", "", NADMOD.ClientPanel)
+	spawnmenu.AddToolMenuOption("杂项", "NADMOD 物品保护", "Admin", "管理员", "", "", NADMOD.AdminPanel)
+	spawnmenu.AddToolMenuOption("杂项", "NADMOD 物品保护", "Client", "客户端", "", "", NADMOD.ClientPanel)
 end
 hook.Add("PopulateToolMenu", "NADMOD.PopulateToolMenu", NADMOD.PopulateToolMenu)
 
@@ -281,7 +281,7 @@ end)
 
 CPPI = {}
 
-function CPPI:GetName() return "Nadmod Prop Protection" end
+function CPPI:GetName() return "Nadmod物品保护" end
 function CPPI:GetVersion() return "" end
 function metaply:CPPIGetFriends() return {} end
 function metaent:CPPIGetOwner() return NADMOD.GetPropOwner(self) end
