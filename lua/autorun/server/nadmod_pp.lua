@@ -59,8 +59,8 @@ if not NADMOD.Props then
 		//Print a harmless error if we detect other PP's active, since this often leads to confusion. NPP'll still load fine
 		//Known CPPI plugins: FPP, SPP, NPP, ULX's UPS
 		if not oldCPPI or (oldCPPI.GetName and oldCPPI:GetName() == "Nadmod物品保护") then oldCPPI = CPPI end
-		if oldCPPI and (not oldCPPI.GetName or oldCPPI:GetName() ~= "Nadmod物品保护") then Error("NPP has detected "..(oldCPPI.GetName and oldCPPI:GetName() or "another CPPI PP").." is installed, you probably only want one PP active at a time!!\n")
-		elseif PP_Settings then Error("NPP has detected Evolve's PP plugin, you probably only want one PP active at a time!!\n")
+		if oldCPPI and (not oldCPPI.GetName or oldCPPI:GetName() ~= "Nadmod物品保护") then Error("NPP检测到 "..(oldCPPI.GetName and oldCPPI:GetName() or "其它CPPI物品保护").." 已被安装，你可能只想要启用一个物品保护！！\n")
+		elseif PP_Settings then Error("NPP检测到了Evolve's PP插件，你可能只想要启用一个物品保护！！\n")
 		end
 	end)
 	if game.SinglePlayer() then
@@ -525,7 +525,7 @@ function NADMOD.DebugTotals(ply,cmd,args)
 end
 concommand.Add("nadmod_totals", NADMOD.DebugTotals)
 
-CreateConVar("nadmod_overlay", 2, {FCVAR_NOTIFY, FCVAR_ARCHIVE, FCVAR_REPLICATED}, "0 - Disables NPP Overlay. 1 - Minimal overlay of just owner info. 2 - Includes model, entityID, class")
+CreateConVar("nadmod_overlay", 2, {FCVAR_NOTIFY, FCVAR_ARCHIVE, FCVAR_REPLICATED}, "0 - 禁用NPP覆盖层。1 - 只显示拥有者信息的覆盖层。2 - 包含模型、实体ID和类名")
 
 --=========================================================--
 --   Clientside Callbacks for the Friends/Options panels   --
@@ -540,7 +540,7 @@ net.Receive("nadmod_ppconfig",function(len,ply)
 	if not ply:IsValid() or not NADMOD.IsPPAdmin(ply) then return end
 	NADMOD.PPConfig = net.ReadTable()
 	NADMOD.Save()
-	NADMOD.Notify(ply, "Settings received!")
+	NADMOD.Notify(ply, "设置已接收！")
 end)
 concommand.Add("npp_refreshfriends",function(ply,cmd,args)
 	if not ply:IsValid() then return end
@@ -596,4 +596,4 @@ if E2Lib and E2Lib.replace_function then
 	end)
 end
 
-print("[NADMOD PP - NADMOD Prop Protection Module v"..NADMOD.PPVersion.." Loaded]")
+print("[NADMOD PP - NADMOD物品保护模块 v"..NADMOD.PPVersion.." 已加载]")
